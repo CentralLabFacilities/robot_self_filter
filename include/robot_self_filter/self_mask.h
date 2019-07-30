@@ -470,37 +470,40 @@ struct LinkInfo
               ROS_WARN("No collision geometry specified for link '%s'", links[i].name.c_str());
               continue;
             }
+            
+            for(urdf::CollisionSharedPtr col :link->collision_array) {
 	
-            shapes::Shape *shape = constructShape(link->collision->geometry.get());
-	
-            if (!shape)
-            {
-              ROS_ERROR("Unable to construct collision shape for link '%s'", links[i].name.c_str());
-              continue;
-            }
-	
-            SeeLink sl;
-            sl.body = bodies::createBodyFromShape(shape);
+                shapes::Shape *shape = constructShape(col->geometry.get());
 
-            if (sl.body)
-            {
-              sl.name = links[i].name;
-              
-              // collision models may have an offset, in addition to what TF gives
-              // so we keep it around
-              sl.constTransf = urdfPose2TFTransform(link->collision->origin);
-              
-              sl.body->setScale(links[i].scale);
-              sl.body->setPadding(links[i].padding);
-              ROS_INFO_STREAM("Self see link name " <<  links[i].name << " padding " << links[i].padding);
-              sl.volume = sl.body->computeVolume();
-              sl.unscaledBody = bodies::createBodyFromShape(shape);
-              bodies_.push_back(sl);
-            }
-            else
-              ROS_WARN("Unable to create point inclusion body for link '%s'", links[i].name.c_str());
-	
-            delete shape;
+                if (!shape)
+                {
+                  ROS_ERROR("Unable to construct collision shape for link '%s'", links[i].name.c_str());
+                  continue;
+                }
+
+                SeeLink sl;
+                sl.body = bodies::createBodyFromShape(shape);
+
+                if (sl.body)
+                {
+                  sl.name = links[i].name;
+
+                  // collision models may have an offset, in addition to what TF gives
+                  // so we keep it around
+                  sl.constTransf = urdfPose2TFTransform(col->origin);
+
+                  sl.body->setScale(links[i].scale);
+                  sl.body->setPadding(links[i].padding);
+                  ROS_DEBUG_STREAM("Self see link name " <<  links[i].name << " padding " << links[i].padding << " type: " << col->geometry->type);
+                  sl.volume = sl.body->computeVolume();
+                  sl.unscaledBody = bodies::createBodyFromShape(shape);
+                  bodies_.push_back(sl);
+                }
+                else
+                  ROS_WARN("Unable to create point inclusion body for link '%s'", links[i].name.c_str());
+
+                delete shape;
+              }
           }
     
           if (missing.str().size() > 0)
