@@ -144,7 +144,7 @@ struct LinkInfo
     template <typename PointT>
     class SelfMask
     {	
-    protected:
+    public:
 	
 	struct SeeLink
 	{
@@ -643,9 +643,10 @@ struct LinkInfo
 	tf::Vector3                           sensor_pos_;
 	double                              min_sensor_dist_;
 	
-	std::vector<SeeLink>                bodies_;
 	std::vector<double>                 bspheresRadius2_;
 	std::vector<bodies::BoundingSphere> bspheres_;
+public:
+	std::vector<SeeLink>                bodies_;
 	
     };
     
